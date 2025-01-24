@@ -5,8 +5,12 @@ class Bank {
         this.accounts = []; // Stores all accounts in the bank
     }
 
-    // Add methods here:
-    // Example: createAccount(name, initialDeposit)
+   // Create a new amount for name with initialDeposit and add it to accounts  
+   createAccount(name, initialDeposit) {
+        const account = new Account(name, initialDeposit);
+        this.accounts.push(account);
+        return account;
+    }
 
 }
 
@@ -14,23 +18,73 @@ class Bank {
 class Account {
     constructor(name, balance = 0) {
         this.name = name; // Account holder's name
-        this.balance = balance; // Initial balance (default is 0)
+        this.balance = balance < 0 ? 0 : balance; // Initial balance (default is 0 and ensure no negative value)
         this.transactionHistory = []; // Keeps a record of all transactions
     }
 
-    // Add methods here:
-    // Example: deposit(amount) 
-    // example data to be stored in transactionHistory { transactionType: 'Deposit', amount: 500 }
+    // Helper function to determine whether deposit amount is valid
+    // i.e. must be greater than 0
+    #isDepositValid(amount) {
+        if (amount <= 0) {
+            return false;
+        }
+        return true;
+    }
 
-    // Example: withdraw(amount)
-    // example data to be stored in transactionHistory { transactionType: 'Withdrawal', amount: 200 }
+    // Helper function to determine whether withdrawal amount is valid
+    // i.e. must be greater than 0 and smaller than or equal to balance
+    #isWithdrawalValid(amount) {
+        if (amount <= 0 || amount > this.balance) {
+            return false;
+        }
+        return true;
+    }
 
-    // Example: transfer(amount, recipientAccount)
-    // example data to be stored in transactionHistory:
-    // for account sending { transactionType: 'Transfer', amount: 300, to: recipientName }
-    // for account recieving { transactionType: 'Received', amount: 300, from: senderName }
+    // Deposit amount into the account
+    deposit(amount) {
+        // Add deposit amount to balance and record transaction to transaction history
+        // only if the deposit amount is valid
+        if (this.#isDepositValid(amount)) {
+            this.balance += amount;
+            this.transactionHistory.push({ transactionType: 'Deposit', amount: amount });
+            return true;
+        }
+        return false;
+    }
+
+    // Withdraw amount from the account
+    withdraw(amount){
+        // Deduct withdrawal amount from balance and record transaction to transaction history
+        // only if the withdrawal amount is valid
+        if (this.#isWithdrawalValid(amount)) {
+            this.balance -= amount;
+            this.transactionHistory.push({ transactionType: 'Withdrawal', amount: amount});
+            return true;
+        }
+        return false;
+    }
+
+    // Transfer amount from this account to recipientAccount
+    transfer(amount, recipientAccount){
+        // Proceed only when the amount to be transferred is a valid withdrawal amount
+        if (this.#isWithdrawalValid(amount)) {
+            // Deduct transfer amount from sender's balance and record transaction for sender
+            this.balance -= amount;
+            this.transactionHistory.push({ transactionType: 'Transfer', amount: amount, to: recipientAccount.name });
+
+            // Add transfer amount to recipient's balance and record transaction for recipient
+            recipientAccount.balance += amount;
+            recipientAccount.transactionHistory.push({ transactionType: 'Received', amount: amount, from: this.name });
+            return true;
+        }
+        return false;
+    }
     
-    // Example: checkBalance()
+    // Return account balance
+    checkBalance() {
+        return this.balance;
+    }
+
 }
 
 //<-------------------------------DO NOT WRITE BELOW THIS LINE------------------------------>
